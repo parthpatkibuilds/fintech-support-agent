@@ -18,3 +18,11 @@ A portfolio project for a Forward Deployed Engineering internship application, b
 - After each step, stop and tell me: the files changed, a short explanation of each file, and the command to run it. Wait for me before the next step.
 - Commit after each working step with a plain message.
 - BANKING77 is CC BY 4.0 (PolyAI; Casanueva et al., 2020). Credit it in the README and keep raw data out of git except small samples.
+
+## Running commands (WSL)
+`uv` and `make` live inside WSL (Ubuntu), not on the Windows PATH. Every agent, including subagents, must run every `uv` and `make` command through WSL from the repo root, or from an Ubuntu terminal where no prefix is needed:
+- `wsl -- uv --version`
+- `wsl -- make --version`
+- `wsl -- uv run pytest`
+
+Run from PowerShell or Git Bash without the `wsl` prefix, both tools are reported missing. That is an environment mismatch, not a missing dependency: do not report them as missing, and do not install anything on the Windows side.
