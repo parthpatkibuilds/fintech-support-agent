@@ -1,9 +1,11 @@
 # .gitignore: keeps secrets, raw data and generated clutter out of git.
 # Why: CLAUDE.md says keys live in .env only and raw BANKING77 data stays out of git.
 # .env.example is NOT ignored on purpose; it holds variable names only.
+# data/README.md is NOT ignored on purpose; it carries the BANKING77 licence and citation.
 
 .env
-data/
+data/*
+!data/README.md
 *.db
 
 __pycache__/
