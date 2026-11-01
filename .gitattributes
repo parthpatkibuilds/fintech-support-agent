@@ -1,0 +1,6 @@
+# .gitattributes: keeps prompt files on LF line endings in every checkout.
+# Why: a prompt file's SHA-256 is its version id and cache key, and CRLF would change it.
+# Git for Windows sets core.autocrlf=true, which rewrites text files to CRLF on checkout.
+# Check: git ls-files --eol phase0_resolvability/prompts/v1.txt   (expect attr/text eol=lf)
+
+phase0_resolvability/prompts/*.txt text eol=lf

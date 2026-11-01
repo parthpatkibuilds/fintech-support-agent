@@ -17,6 +17,7 @@ A portfolio project for a Forward Deployed Engineering internship application, b
 - Keep files small, one job each. Start every new file with a 3 to 5 line comment: what it does, why it exists, how to test it.
 - After each step, stop and tell me: the files changed, a short explanation of each file, and the command to run it. Wait for me before the next step.
 - Commit after each working step with a plain message.
+- Prompt files (phase0_resolvability/prompts/*.txt) are LF-only, carry no header comment (the whole file is sent to the model, so this is the one exception to the header rule above), and are frozen once used: never edit a used prompt, write the next version (v2.txt). A prompt's SHA-256 is computed from the text as sent, read in text mode so CRLF and LF give the same hash, never from raw file bytes. .gitattributes forces LF on checkout.
 - BANKING77 is CC BY 4.0 (PolyAI; Casanueva et al., 2020). Credit it in the README and keep raw data out of git except small samples.
 
 ## Running commands (WSL)
