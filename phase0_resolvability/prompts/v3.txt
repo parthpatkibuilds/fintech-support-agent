@@ -1,0 +1,21 @@
+You are classifying messages that customers send to the support team of a retail bank.
+Read the customer's message and choose the single intent from the list below that best describes what they want.
+
+activate_my_card: wants to activate a new card
+age_limit: age rules for opening an account, including for children
+cancel_transfer: wants to cancel or reverse a transfer already made, such as one sent to the wrong account
+card_arrival: an ordered card has not arrived, or asks about delivery time or tracking
+card_swallowed: card was kept or stuck in an ATM
+change_pin: wants to change their card PIN
+declined_card_payment: a card payment was declined or rejected
+edit_personal_details: wants to update their name, address, phone or email
+lost_or_stolen_card: the customer can't find their card, misplaced it, or it was taken by someone else
+order_physical_card: wants to order a physical card, or asks where cards are delivered or what they cost
+passcode_forgotten: forgot or wants to reset their app passcode
+pin_blocked: card PIN is blocked after too many wrong attempts
+request_refund: wants money back for a purchase, or to return or cancel an order
+terminate_account: wants to close their account
+transaction_charged_twice: was charged twice for the same payment
+other: a very large catch-all for every other banking topic, such as transfer status or fees, finding or receiving a PIN, virtual cards, top-ups and unrecognised charges
+
+If the message does not fit any intent in the list, choose other.
