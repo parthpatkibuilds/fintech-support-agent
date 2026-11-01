@@ -17,6 +17,7 @@ from phase0_resolvability.evaluate import (
     latest_run_id,
     load_tiers,
     read_predictions,
+    render_confusions,
     render_summary,
     slice_of,
     tier_of,
@@ -176,6 +177,18 @@ def test_no_confusions_when_everything_is_right():
 
     assert ev.confusions == []
     assert "None: every prediction matched" in render_summary(ev)
+    assert render_confusions(ev).startswith("None: every prediction matched")
+
+
+def test_confusions_table_and_summary_share_one_rendering():
+    ev = build_evaluation("r_test", frame(PAIRS), TIERS)
+
+    lines = render_confusions(ev).splitlines()
+
+    assert lines[0] == "| Gold | Predicted | Count |"
+    assert lines[2] == "| `a` | `b` | 2 |"
+    assert len(lines) == 2 + len(ev.confusions)
+    assert render_confusions(ev) in render_summary(ev)
 
 
 def test_precision_and_recall_per_label():

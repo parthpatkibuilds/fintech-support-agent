@@ -1,12 +1,13 @@
 # compare.py: prints a before-and-after table of the headline numbers for two runs.
 # Why: shows whether a new prompt version moved the numbers, scored by the same code as evaluate.py.
+# render_comparison_markdown gives the same table as markdown for make_report.py.
 # Run: uv run python -m phase0_resolvability.compare <before_run_id> <after_run_id>
 # Test: uv run pytest tests/test_compare.py
 
 import argparse
 import sys
 
-from phase0_resolvability.evaluate import Evaluation, Ratio, evaluate_run
+from phase0_resolvability.evaluate import Evaluation, Ratio, evaluate_run, table
 
 
 def change(before: Ratio, after: Ratio) -> str:
@@ -46,6 +47,24 @@ def render_comparison(before: Evaluation, after: Evaluation) -> str:
     for warning in warnings(before, after):
         lines += ["", f"WARNING: {warning}"]
     return "\n".join(lines)
+
+
+def render_comparison_markdown(before: Evaluation, after: Evaluation) -> str:
+    """The same numbers as render_comparison, as markdown for the report."""
+    runs = [
+        f"- {role}: `{ev.run_id}` (prompt {ev.prompt_version}, {ev.slice_name.upper()} slice, {ev.total} queries)"
+        for role, ev in (("Before", before), ("After", after))
+    ]
+    rows = [
+        [name, str(old), str(new), change(old, new)]
+        for (name, old), (_, new) in zip(before.headline(), after.headline())
+    ]
+    parts = [
+        "\n".join(runs),
+        table(["Metric", "Before", "After", "Change"], rows),
+        *[f"> WARNING: {warning}" for warning in warnings(before, after)],
+    ]
+    return "\n\n".join(parts)
 
 
 def main() -> None:

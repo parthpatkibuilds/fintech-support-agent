@@ -7,7 +7,12 @@ import pandas as pd
 import pytest
 
 from phase0_resolvability.classify import INVALID
-from phase0_resolvability.compare import change, render_comparison, warnings
+from phase0_resolvability.compare import (
+    change,
+    render_comparison,
+    render_comparison_markdown,
+    warnings,
+)
 from phase0_resolvability.evaluate import Ratio, build_evaluation
 from phase0_resolvability.sample import OTHER
 
@@ -90,6 +95,30 @@ def test_warnings(before_id, after_id, expected):
 
     assert len(found) == len(expected)
     assert all(want in got for want, got in zip(expected, found))
+
+
+def test_markdown_table_keeps_the_counts_next_to_the_percentages():
+    before = evaluation("x_v1_test", BEFORE_PAIRS, "v1")
+    after = evaluation("x_v2_test", AFTER_PAIRS, "v2")
+
+    lines = render_comparison_markdown(before, after).splitlines()
+
+    assert "- Before: `x_v1_test` (prompt v1, TEST slice, 4 queries)" in lines
+    assert "- After: `x_v2_test` (prompt v2, TEST slice, 4 queries)" in lines
+    assert "| Metric | Before | After | Change |" in lines
+    assert (
+        "| Intent accuracy, in-scope queries | 2 of 3 (66.7%) | 3 of 3 (100.0%) | +33.3 pp |"
+        in lines
+    )
+    assert not any("WARNING" in line for line in lines)
+
+
+def test_markdown_warnings_come_after_the_table():
+    text = render_comparison_markdown(
+        evaluation("x_v1_dev", BEFORE_PAIRS), evaluation("x_v2_test", AFTER_PAIRS)
+    )
+
+    assert text.splitlines()[-1].startswith("> WARNING: the runs use different slices")
 
 
 def test_warnings_are_printed_at_the_end():

@@ -232,6 +232,16 @@ def table(header: list[str], rows: list[list[str]]) -> str:
     return "\n".join(lines)
 
 
+def render_confusions(ev: Evaluation) -> str:
+    """The most frequent gold/predicted disagreements as a markdown table."""
+    if not ev.confusions:
+        return "None: every prediction matched its gold label."
+    return table(
+        ["Gold", "Predicted", "Count"],
+        [[f"`{g}`", f"`{p}`", str(c)] for g, p, c in ev.confusions],
+    )
+
+
 def render_summary(ev: Evaluation) -> str:
     results = table(
         ["Metric", "Result"],
@@ -240,13 +250,7 @@ def render_summary(ev: Evaluation) -> str:
             ["Invalid predictions (counted as wrong everywhere)", str(ev.invalid)],
         ],
     )
-    if ev.confusions:
-        confusions = table(
-            ["Gold", "Predicted", "Count"],
-            [[f"`{g}`", f"`{p}`", str(c)] for g, p, c in ev.confusions],
-        )
-    else:
-        confusions = "None: every prediction matched its gold label."
+    confusions = render_confusions(ev)
     per_label = table(
         ["Label", "Precision", "Recall"],
         [[f"`{s.label}`", str(s.precision), str(s.recall)] for s in ev.per_label],
