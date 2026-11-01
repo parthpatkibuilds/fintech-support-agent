@@ -1,0 +1,184 @@
+# intents.yaml: my hand-scored resolvability rating for the 15 in-scope BANKING77 intents.
+# Why: Phase 0 asks which tickets a bot could resolve; these scores are the evidence.
+# The other 62 intents are left out on purpose (label `other`). Scores are my judgement, not measurements.
+# Check: uv run python -c "import yaml; d=yaml.safe_load(open('phase0_resolvability/intents.yaml'))['intents']; print(sum(e['kind'] not in ('information','request','problem') or None in e['scores'].values() or e['tier'] is None or not e['why'] for e in d), 'of', len(d), 'entries unfilled')"
+
+# SCORING GUIDE 
+# Every score is 1, 2 or 3, and 3 always means "better for a bot", so risk 3 = low risk.
+#   data_api        3: the facts needed sit in a bank system an API can read      1: they do not
+#   action          3: the fix is one clear action or a plain answer              1: no clear action
+#   policy_clarity  3: the rule for what to do is written down and clear          1: decided case by case
+#   risk            3: a wrong answer is harmless                                 1: money or security harm
+#   ambiguity       3: the customer's message clearly means one thing             1: it could mean many things
+# KIND (not a score): what most of the real queries for the intent are.
+#   information = asks a question | request = asks for something to be done | problem = something failed, fix it
+# TIER RULE:
+#   tier A = The steps to resolving the support ticket are clear, accessible and easily achievable by the agent, meaning the agent can resolve this ticket end-to-end with no human intervention or oversight required. (SCORES: no score is 1.)
+#   tier B = The steps to resolving this support ticket are moderately clear, accessible and achievable by the agent with some human assistance, oversight or intervention. (SCORES: everything else.) 
+#   tier C = The steps to resolving this support ticket aren't clear, accessible or achievable by the agent on its own, meaning the agent needs human intervention, or a human-in-the-loop. (SCORES: 2 or more scores are 1.)
+
+intents:
+  - name: lost_or_stolen_card
+    kind: request 
+    scores:
+      data_api: 3 
+      action: 2
+      policy_clarity: 2 
+      risk: 1 
+      ambiguity: 2 
+    tier: C
+    why: "The agent can access clear lost / stolen card policies easily, however resolutions aren't standard to all cases. Therefore, policy clarity is 2. The actions to resolve are usually multiple, and a wrong answer/failure can lead to serious money/security harm. Most customer messages are straightforward, however the underlying meaning could be difficult to pinpoint. Risk is 1, therefore human intervention may be required."
+
+  - name: passcode_forgotten
+    kind: problem 
+    scores:
+      data_api: 3 
+      action: 3 
+      policy_clarity: 3 
+      risk: 1 
+      ambiguity: 3 
+    tier: B
+    why: "The agent can easily access password entry data and reset process information. The step to resolve a forgotten password is simple, provide the reset password + verification process/link. The rules on what to do are clear, and the underlying meaning of messages is easy to pinpoint. However, a wrong answer/action resulting in bank password leakage or other security issues carries a high risk."
+
+  - name: card_arrival
+    kind: request 
+    scores:
+      data_api: 2
+      action: 2 
+      policy_clarity: 1
+      risk: 2
+      ambiguity: 2 
+    tier: B
+    why: "Delivery & order tracking data most likely does not sit inside a bank system, making it difficult for the agent to access that data unless access is provided. The action is moderately clear as the agent has to check order tracking data if it can. Resolutions are case by case, as card arrival issues could have multiple external root causes/rules on what to do. Majority of the ticket needs are easy to pinpoint, however card_delivery_estimate is hard to differentiate when processing 'when will i get my card' requests. The allocated tier is B, as if data access is provided, the agent can easily read order/delivery data and resolve most queries, however, a human will be required if data access is not provided."
+
+  - name: card_swallowed
+    kind: problem 
+    scores:
+      data_api: 1
+      action: 2
+      policy_clarity: 1
+      risk: 1
+      ambiguity: 3
+    tier: C
+    why: "Almost all support tickets are physical/ATM related. The facts needed to understand the root cause are usually not in the bank system, especially if it's a physical defect. The action is moderately clear if no resolution is found - to contact the closest bank and get a human-in-the-loop. The resolution is dealt case by case as root causes can vary. The tickets are not ambiguous in terms of identifying the problem, but a wrong answer can lead to security harm or a lost card, thus the tier is C."
+
+  - name: activate_my_card
+    kind: information 
+    scores:
+      data_api: 3 
+      action: 3 
+      policy_clarity: 3 
+      risk: 2 
+      ambiguity: 3 
+    tier: A
+    why: "The agent can easily access identity, card and banking details from IAM, CMS and bank system APIs. Activating a card is a straightforward task with a clear policy, but a wrong answer/action can result in customers being restricted from their own card."
+
+  - name: order_physical_card
+    kind: information 
+    scores:
+      data_api: 3 
+      action: 3 
+      policy_clarity: 3 
+      risk: 3 
+      ambiguity: 3 
+    tier: A
+    why: "The agent can easily access information relating to how to order a physical card, which is what majority of the tickets are. The action is clear, usually one-step to return answers. The rules for ordering cards are well defined, the risk is low as a wrong answer is unlikely to lead to security/money harm, but rather a customer not able to order their card. Most tickets have the same wording & terminology."
+
+  - name: pin_blocked
+    kind: request 
+    scores:
+      data_api: 2 
+      action: 2 
+      policy_clarity: 3 
+      risk: 1 
+      ambiguity: 2
+    tier: C
+    why: "The agent can access how many times a customer entered the wrong pin, and can access KYC/identity confirmation data, but cannot access actual PINs. There are multiple steps to resolving this issue, however they are well-defined steps (PIN-reset, identity check). These outcomes are detailed policies with minimal potential root causes: fraud or genuine PIN reset requirement. However, as fraudulent actors can prompt inject to request an agent for access to customer funds, the risk is high and therefore requires human intervention. Ambiguity is moderate as a few tickets are hard to label between get_physical_card and passcode_forgotten (if PIN/passcode terms are never used)."
+
+  - name: change_pin
+    kind: information 
+    scores:
+      data_api: 3 
+      action: 3 
+      policy_clarity: 3 
+      risk: 1 
+      ambiguity: 3 
+    tier: B 
+    why: "The agent can easily access the change pin process information. The rule to resolve change pin information tickets is clear. Ambiguity is low as tickets clearly point towards change_pin. The risk of a wrong answer/action is high as customers can lose access to funds. Therefore, the allocated tier is B as human oversight may be required for complex tickets."
+
+  - name: age_limit
+    kind: information 
+    scores:
+      data_api: 3 
+      action: 3 
+      policy_clarity: 3 
+      risk: 1 
+      ambiguity: 3 
+    tier: B 
+    why: "The agent can easily access age limit data and open accounts. The actions to return age limit information is clear and simple, with rules on consent, age, child protection being very clear. Majority of the support tickets are not ambiguous as there's no in depth underlying meaning. The risk is high as a wrong answer can lead to a minor having an account when they're not supposed to, thus human oversight may be required. "
+
+  - name: edit_personal_details
+    kind: request 
+    scores:
+      data_api: 3 
+      action: 2 
+      policy_clarity: 3 
+      risk: 2 
+      ambiguity: 2 
+    tier: A
+    why: "The agent can access customer personal details easily, however there are multiple actions to editing personal details accurately. The rules on how to edit personal details and KYC/identity verification are straightforward. Most tickets don't specify details or labels, hence are moderately ambigious. The risk is moderate if an agent inaccurately edits details or provides misleading answers."
+
+  - name: declined_card_payment
+    kind: problem 
+    scores:
+      data_api: 2 
+      action: 2 
+      policy_clarity: 2 
+      risk: 2 
+      ambiguity: 1 
+    tier: B 
+    why: "The agent can easily read customer fund data, lost/stolen card status, spending limits, etc. However, it cannot read merchant network failures, especially for online shopping. The risk is moderate as wrong answers can lead to customer frustration. The support tickets could have multiple intents, thus a human-in-the-loop may be required for tickets that are not caused by the common causes (insufficient funds, stolen card status, etc)."
+
+  - name: transaction_charged_twice
+    kind: problem 
+    scores:
+      data_api: 2 
+      action: 1 
+      policy_clarity: 2 
+      risk: 1 
+      ambiguity: 1 
+    tier: C 
+    why: "The agent cannot access/read/understand merchant data, human errors, network or system failures, however it can read the transaction and bank dispute routes. There is no clear action, and the policy on resolving transaction charged twice is only applicable if the root cause is internal such as authorization holds. The risk is high as funds can be lost, and the support tickets are ambiguous, hence the tier is C."
+
+  - name: request_refund
+    kind: request 
+    scores:
+      data_api: 1
+      action: 2 
+      policy_clarity: 2  
+      risk: 1 
+      ambiguity: 1 
+    tier: C 
+    why: "The agent can't access merchant refund policies or rules, this means there's no clear refunding action. The resolving action would be to request the customer to contact the merchant, thus the 2 score. The rule on what to do is unclear at the start, however the agent can fallback to asking the customer to contact the merchant. A bot promising refund or inventing merchant policy is high risk. Most support tickets don't mention the product, purchase amount, merchant, merchant refund policy, therefore the tickets are ambiguous. The tier is C and requires human intervention."
+
+  - name: cancel_transfer
+    kind: request 
+    scores:
+      data_api: 3 
+      action: 2 
+      policy_clarity: 3
+      risk: 1 
+      ambiguity: 2 
+    tier: B
+    why: "The agent can easily access customer transaction data and KYC/identity verification data. However, reverting a transaction or verifying identity to prevent fraud is a multi-step process with variables. The rules on what to do when a customer is allowed to cancel/revert a transaction are well defined, but the risk of a bot cancelling real transactions or recommending false information is a security/money risk. Thus, the tier is B and may require human oversight. The intents pending_transfer, failed_transfer, and declined_transfer are tellable as they ask why, however there is some request_refund overlap, making it moderately ambiguous."
+
+  - name: terminate_account
+    kind: request 
+    scores:
+      data_api: 3 
+      action: 3 
+      policy_clarity: 3 
+      risk: 1 
+      ambiguity: 3 
+    tier: B 
+    why: "The agent can easily achieve identity confirmation + KYC to confirm account cancellation. Closing an account is simple and has well defined rules, however is high risk if identity is not verified or the bot provides false answers. Majority of the support tickets were upset customers, thus customer frustration is an added business risk. Wording and terminology is similiar in most tickets, and they are tellable from other intents."
