@@ -34,6 +34,7 @@ COLUMNS = [
     "text",
     "gold_label",
     "gold_in_scope",
+    "slice",
     "predicted",
     "prompt_version",
     "prompt_sha",
@@ -200,7 +201,10 @@ class Classifier:
         }
 
 
-def classify_slice(slice_df: pd.DataFrame, classifier: Classifier) -> pd.DataFrame:
+def classify_slice(
+    slice_df: pd.DataFrame, classifier: Classifier, slice_name: str
+) -> pd.DataFrame:
+    """slice_name (dev or test) is written into every row, so evaluate.py knows which slice it scores."""
     rows = []
     total = len(slice_df)
     for number, (text, gold) in enumerate(
@@ -212,6 +216,7 @@ def classify_slice(slice_df: pd.DataFrame, classifier: Classifier) -> pd.DataFra
                 "text": text,
                 "gold_label": gold,
                 "gold_in_scope": gold != OTHER,
+                "slice": slice_name,
                 "predicted": predict(record, classifier.labels),
                 "prompt_version": classifier.prompt.version,
                 "prompt_sha": classifier.prompt.sha,
@@ -284,7 +289,7 @@ def main() -> None:
         f"Model {config.MODEL_CLASSIFIER}, prompt {prompt.version} (sha256 {prompt.sha[:12]}...), {len(slice_df)} queries"
     )
     classifier = Classifier(make_client, config.MODEL_CLASSIFIER, prompt, labels)
-    predictions = classify_slice(slice_df, classifier)
+    predictions = classify_slice(slice_df, classifier, args.slice.stem)
     path = out_dir / "predictions.csv"
     predictions.to_csv(path, index=False)
     print_summary(predictions, classifier)

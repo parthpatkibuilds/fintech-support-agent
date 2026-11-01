@@ -20,7 +20,9 @@ TIERS = ("A", "B", "C")
 NO_TIER = "none"  # the tier of `other`: not one of my in-scope intents
 TOP_CONFUSIONS = 10
 REQUIRED_COLUMNS = ["gold_label", "predicted", "prompt_version", "prompt_sha", "model"]
-# classify.py names a run <timestamp>_<prompt>_<slice>[_n<limit>], so the slice is in the id.
+SLICES = ("dev", "test")
+# classify.py names a run <timestamp>_<prompt>_<slice>[_n<limit>]. The limit is only recorded
+# there; the slice is also a column, and the id is the fallback for runs made before that column.
 RUN_ID_SLICE = re.compile(r"_(dev|test)(?:_n(\d+))?$")
 
 
@@ -99,10 +101,24 @@ def tier_of(label: str, tiers: dict[str, str]) -> str:
 
 
 def slice_of(run_id: str) -> tuple[str, int | None]:
+    """(slice, limit) as written in the run id; ("unknown", None) if it has neither."""
     match = RUN_ID_SLICE.search(run_id)
     if match is None:
         return "unknown", None
     return match.group(1), int(match.group(2)) if match.group(2) else None
+
+
+def slice_name_of(df: pd.DataFrame, run_id: str) -> str:
+    """The slice the run classified: the recorded column if there is one, else the run id."""
+    if "slice" not in df.columns:  # run made before classify.py recorded the slice
+        return slice_of(run_id)[0]
+    recorded = set(df["slice"])
+    if len(recorded) != 1:
+        raise ValueError(
+            f"{run_id}: predictions mix several slices: {sorted(recorded)}"
+        )
+    (name,) = recorded
+    return name if name in SLICES else "unknown"
 
 
 def read_predictions(path: Path, valid_labels: list[str]) -> pd.DataFrame:
@@ -158,11 +174,10 @@ def build_evaluation(
             )
         )
 
-    slice_name, limit = slice_of(run_id)
     return Evaluation(
         run_id=run_id,
-        slice_name=slice_name,
-        limit=limit,
+        slice_name=slice_name_of(df, run_id),
+        limit=slice_of(run_id)[1],
         prompt_version=joined(df, "prompt_version"),
         prompt_sha=joined(df, "prompt_sha"),
         model=joined(df, "model"),

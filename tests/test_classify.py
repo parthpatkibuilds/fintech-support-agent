@@ -262,9 +262,10 @@ def test_classify_slice_output_columns_and_counts(tmp_path):
         }
     )
 
-    out = classify.classify_slice(slice_df, classifier)
+    out = classify.classify_slice(slice_df, classifier, "dev")
 
     assert list(out.columns) == COLUMNS
+    assert out["slice"].tolist() == ["dev", "dev"]
     assert out["predicted"].tolist() == ["card_arrival", "card_arrival"]
     assert out["gold_in_scope"].tolist() == [True, False]
     assert set(out["prompt_version"]) == {"v1"}

@@ -45,8 +45,9 @@ PAIRS = [
 ]
 
 
-def frame(pairs: list[tuple[str, str]]) -> pd.DataFrame:
-    return pd.DataFrame(
+def frame(pairs: list[tuple[str, str]], slice_name: str | None = None) -> pd.DataFrame:
+    """slice_name=None builds a file from before classify.py recorded the slice."""
+    df = pd.DataFrame(
         {
             "text": [f"query {i}" for i in range(len(pairs))],
             "gold_label": [gold for gold, _ in pairs],
@@ -56,6 +57,9 @@ def frame(pairs: list[tuple[str, str]]) -> pd.DataFrame:
             "model": "stub-model",
         }
     )
+    if slice_name is not None:
+        df["slice"] = slice_name
+    return df
 
 
 @pytest.mark.parametrize(
@@ -92,6 +96,42 @@ def test_tier_of(label, expected):
 )
 def test_slice_of(run_id, expected):
     assert slice_of(run_id) == expected
+
+
+@pytest.mark.parametrize(
+    ("recorded", "run_id", "slice_name", "limit"),
+    [
+        ("test", "custom_run", "test", None),  # the column alone is enough
+        ("dev", "custom_run", "dev", None),
+        ("test", "x_v1_dev", "test", None),  # the column wins over a misleading id
+        ("holdout", "x_v1_test", "unknown", None),  # recorded, but neither dev nor test
+        ("dev", "x_v1_dev_n20", "dev", 20),  # the limit is only in the id
+        ("test", "x_v1_test_n20", "test", 20),
+        (
+            None,
+            "x_v1_test",
+            "test",
+            None,
+        ),  # older run, no column: the id is the fallback
+        (None, "x_v1_dev_n20", "dev", 20),
+        (None, "custom_run", "unknown", None),
+    ],
+)
+def test_slice_comes_from_the_column_with_the_run_id_as_fallback(
+    recorded, run_id, slice_name, limit
+):
+    ev = build_evaluation(run_id, frame(PAIRS, recorded), TIERS)
+
+    assert (ev.slice_name, ev.limit) == (slice_name, limit)
+    assert ev.is_headline == (slice_name == "test" and limit is None)
+
+
+def test_a_file_that_mixes_slices_is_rejected():
+    df = frame(PAIRS[:2])
+    df["slice"] = ["dev", "test"]
+
+    with pytest.raises(ValueError, match="mix several slices"):
+        build_evaluation("x_v1_test", df, TIERS)
 
 
 def test_headline_numbers():
