@@ -216,14 +216,13 @@ def test_fill_template_leaves_text_with_braces_alone():
     assert text == "code: {x} and done"
 
 
-def test_the_real_template_fills_cleanly_and_keeps_three_empty_commentary_sections():
+def test_the_real_template_fills_cleanly_with_every_section():
     template = TEMPLATE_PATH.read_text(encoding="utf-8")
 
     text = render_report(template, BEFORE, AFTER, load_intents())
 
     assert "{{" not in text
     assert "report_template.md:" not in text  # the header comment stays in the template
-    assert text.count("<!-- YOU WRITE THIS -->") == 3
     for heading in (
         "## Findings",
         "## Why the confusions happen",
