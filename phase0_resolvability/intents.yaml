@@ -26,7 +26,7 @@ intents:
       policy_clarity: 2 
       risk: 1 
       ambiguity: 2 
-    tier: C
+    tier: B
     why: "The agent can access clear lost / stolen card policies easily, however resolutions aren't standard to all cases. Therefore, policy clarity is 2. The actions to resolve are usually multiple, and a wrong answer/failure can lead to serious money/security harm. Most customer messages are straightforward, however the underlying meaning could be difficult to pinpoint. Risk is 1, therefore human intervention may be required."
 
   - name: passcode_forgotten
@@ -92,7 +92,7 @@ intents:
       policy_clarity: 3 
       risk: 1 
       ambiguity: 2
-    tier: C
+    tier: B
     why: "The agent can access how many times a customer entered the wrong pin, and can access KYC/identity confirmation data, but cannot access actual PINs. There are multiple steps to resolving this issue, however they are well-defined steps (PIN-reset, identity check). These outcomes are detailed policies with minimal potential root causes: fraud or genuine PIN reset requirement. However, as fraudulent actors can prompt inject to request an agent for access to customer funds, the risk is high and therefore requires human intervention. Ambiguity is moderate as a few tickets are hard to label between get_physical_card and passcode_forgotten (if PIN/passcode terms are never used)."
 
   - name: change_pin
